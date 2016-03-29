@@ -54,6 +54,5 @@ type Peg = String
 type Move = (Peg, Peg)
 
 hanoi :: Integer -> Peg -> Peg -> Peg -> [Move]
-hanoi = undefined
-
-
+hanoi 1 src dst _ = [(src, dst)]
+hanoi n src dst by = (hanoi (n - 1) src by dst) ++ [(src, dst)] ++ (hanoi (n - 1) by dst src)
