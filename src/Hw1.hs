@@ -56,3 +56,8 @@ type Move = (Peg, Peg)
 hanoi :: Integer -> Peg -> Peg -> Peg -> [Move]
 hanoi 1 src dst _ = [(src, dst)]
 hanoi n src dst by = (hanoi (n - 1) src by dst) ++ [(src, dst)] ++ (hanoi (n - 1) by dst src)
+
+-- list of pegs: [src, dst, *others]
+hanoi' :: Integer -> [Peg] -> [Move]
+hanoi' 1 src dst _ = [(src, dst)]
+hanoi' n src dst others = () ++ [(src, dst)] ++ ()
