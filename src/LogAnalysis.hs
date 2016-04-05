@@ -1,11 +1,17 @@
 {-# OPTIONS_GHC -Wall #-}
-module LogAnalysis (parseMessage, parse) where
+module LogAnalysis (
+  parseMessage,
+  parse,
+  insert,
+  build,
+  inOrder
+) where
 
 import Log
 
 parseMessage :: String -> LogMessage
-parseMessage s = case (parsePieces (words s)) of
-  Just (mt, when, msg) -> LogMessage mt when msg
+parseMessage s = case parsePieces (words s) of
+  Just (mtype, when, msg) -> LogMessage mtype when msg
   Nothing -> Unknown s
 
 parsePieces :: [String] -> Maybe (MessageType, Int, String)
@@ -20,14 +26,31 @@ parseType ("I" : pieces') = Just (Info, pieces')
 parseType _ = Nothing
 
 parseWhen :: (MessageType, [String]) -> Maybe (MessageType, Int, [String])
-parseWhen (mt, time : pieces') = Just (mt, timeInt, pieces')
+parseWhen (mtype, time : pieces') = Just (mtype, timeInt, pieces')
   where
     timeInt = read time :: Int -- TODO: how to capture errors here?
 parseWhen _ = Nothing
 
 parseMsg :: (MessageType, Int, [String]) -> Maybe (MessageType, Int, String)
-parseMsg (mt, when, msgPieces) = Just (mt, when, unwords msgPieces)
-parseMsg _ = Nothing
+parseMsg (mtype, when, msgPieces) = Just (mtype, when, unwords msgPieces)
 
 parse :: String -> [LogMessage]
 parse str = map parseMessage (lines str)
+
+insert :: LogMessage -> MessageTree -> MessageTree
+insert (Unknown _) tree = tree
+insert logmsg Leaf = Node Leaf logmsg Leaf
+insert logmsg (Node left val right) =
+  case logmsgWhen < valWhen of
+    True -> Node (insert logmsg left) val right
+    False -> Node left val (insert logmsg right)
+  where
+    (LogMessage _ logmsgWhen _) = logmsg
+    (LogMessage _ valWhen _) = val
+
+build :: [LogMessage] -> MessageTree
+build lms = foldr insert Leaf lms
+
+inOrder :: MessageTree -> [LogMessage]
+inOrder Leaf = []
+inOrder (Node left val right) = (inOrder left) ++ [val] ++ (inOrder right)
