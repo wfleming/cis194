@@ -1,10 +1,11 @@
 {-# OPTIONS_GHC -Wall #-}
 module LogAnalysis (
-  parseMessage,
-  parse,
-  insert,
   build,
-  inOrder
+  inOrder,
+  insert,
+  parse,
+  parseMessage,
+  whatWentWrong
 ) where
 
 import Text.Read
@@ -19,12 +20,12 @@ parsePieces :: [String] -> Maybe (MessageType, Int, String)
 parsePieces pieces = parseType pieces >>= parseWhen >>= parseMsg
 
 parseType :: [String] -> Maybe (MessageType, [String])
-parseType ("E" : code : pieces') =
-  case codeInt of
+parseType ("E" : severity : pieces') =
+  case severityInt of
     Just ci -> Just (Error ci, pieces')
     Nothing -> Nothing
   where
-    codeInt = readMaybe code :: Maybe Int
+    severityInt = readMaybe severity :: Maybe Int
 parseType ("W" : pieces') = Just (Warning, pieces')
 parseType ("I" : pieces') = Just (Info, pieces')
 parseType _ = Nothing
@@ -61,3 +62,10 @@ build lms = foldr insert Leaf lms
 inOrder :: MessageTree -> [LogMessage]
 inOrder Leaf = []
 inOrder (Node left val right) = (inOrder left) ++ [val] ++ (inOrder right)
+
+whatWentWrong :: [LogMessage] -> [String]
+whatWentWrong lms = map (\(LogMessage _ _ m) -> m) orderedErrs
+  where
+    isSevere (LogMessage (Error s) _ _) = s > 50
+    isSevere _ = False
+    orderedErrs = inOrder $ build $ filter isSevere lms
