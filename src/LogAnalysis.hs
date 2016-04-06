@@ -7,6 +7,7 @@ module LogAnalysis (
   inOrder
 ) where
 
+import Text.Read
 import Log
 
 parseMessage :: String -> LogMessage
@@ -18,17 +19,23 @@ parsePieces :: [String] -> Maybe (MessageType, Int, String)
 parsePieces pieces = parseType pieces >>= parseWhen >>= parseMsg
 
 parseType :: [String] -> Maybe (MessageType, [String])
-parseType ("E" : code : pieces') = Just (Error codeInt, pieces')
+parseType ("E" : code : pieces') =
+  case codeInt of
+    Just ci -> Just (Error ci, pieces')
+    Nothing -> Nothing
   where
-    codeInt = read code :: Int -- TODO: how to capture errors here?
+    codeInt = readMaybe code :: Maybe Int
 parseType ("W" : pieces') = Just (Warning, pieces')
 parseType ("I" : pieces') = Just (Info, pieces')
 parseType _ = Nothing
 
 parseWhen :: (MessageType, [String]) -> Maybe (MessageType, Int, [String])
-parseWhen (mtype, time : pieces') = Just (mtype, timeInt, pieces')
+parseWhen (mtype, time : pieces') =
+  case timeInt of
+    Just ti -> Just (mtype, ti, pieces')
+    Nothing -> Nothing
   where
-    timeInt = read time :: Int -- TODO: how to capture errors here?
+    timeInt = readMaybe time :: Maybe Int
 parseWhen _ = Nothing
 
 parseMsg :: (MessageType, Int, [String]) -> Maybe (MessageType, Int, String)
