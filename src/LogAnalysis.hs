@@ -57,7 +57,7 @@ insert logmsg (Node left val right) =
     (LogMessage _ valWhen _) = val
 
 build :: [LogMessage] -> MessageTree
-build lms = foldr insert Leaf lms
+build = foldr insert Leaf
 
 inOrder :: MessageTree -> [LogMessage]
 inOrder Leaf = []
