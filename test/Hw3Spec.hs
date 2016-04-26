@@ -21,3 +21,13 @@ spec = do
       localMaxima [2,9,5,6,1] `shouldBe` [9,6]
       localMaxima [2,3,4,1,5] `shouldBe` [4]
       localMaxima [1,2,3,4,5] `shouldBe` []
+
+  describe "histogram" $ do
+    it "creates a histogram string" $ do
+      histogram [1,1,1,5] `shouldBe` (unlines [
+         " *        ",
+         " *        ",
+         " *   *    ",
+         "==========",
+         "0123456789"
+        ])
