@@ -1,9 +1,25 @@
+{-# LANGUAGE TypeSynonymInstances #-}
 {-# OPTIONS_GHC -Wall #-}
 module Calc where
 
 import ExprT
 import Parser(parseExp)
+import StackVM
 
+------- EXERCISES 1-2
+eval :: ExprT -> Integer
+eval (Lit i) = i
+eval (Add lhs rhs) = (eval lhs) + (eval rhs)
+eval (Mul lhs rhs) = (eval lhs) * (eval rhs)
+
+evalM :: Maybe ExprT -> Maybe Integer
+evalM Nothing = Nothing
+evalM (Just e) = Just $ eval e
+
+evalStr :: String -> Maybe Integer
+evalStr = fmap evalM $ parseExp Lit Add Mul
+
+------- EXERCISES 3-4
 class Expr a where
   lit :: Integer -> a
   add :: a -> a -> a
@@ -43,14 +59,12 @@ instance Expr Mod7 where
   add = (+)
   mul = (*)
 
-eval :: ExprT -> Integer
-eval (Lit i) = i
-eval (Add lhs rhs) = (eval lhs) + (eval rhs)
-eval (Mul lhs rhs) = (eval lhs) * (eval rhs)
+------- EXERCISE 5
+instance Expr Program where
+  lit = undefined
+  add = undefined
+  mul = undefined
 
-evalM :: Maybe ExprT -> Maybe Integer
-evalM Nothing = Nothing
-evalM (Just e) = Just $ eval e
-
-evalStr :: String -> Maybe Integer
-evalStr = fmap evalM $ parseExp Lit Add Mul
+compile :: String -> Maybe Program
+compile = undefined
+{-compile = parseExp lit add mul-}
